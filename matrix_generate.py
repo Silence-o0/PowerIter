@@ -10,10 +10,10 @@ def generate_matrix_and_save_to_file(size, filename, min_val, max_val):
 
 
 if __name__ == '__main__':
-    size = 2000
-    filename = "input2000hard.txt"
+    size = 1300
+    filename = "input1300.txt"
     min_val = 0
-    max_val = 10000
+    max_val = 1000
 
     generate_matrix_and_save_to_file(size, filename, min_val, max_val)
     print(f"Matrix {size}x{size} was generated.")

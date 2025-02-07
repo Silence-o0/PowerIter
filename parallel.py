@@ -1,5 +1,5 @@
 from Pyro4 import expose
-import array as arr
+import time
 
 
 class Solver:
@@ -12,10 +12,11 @@ class Solver:
         matrix, n = self.read_input()
         num_workers = len(self.workers)
         epsilon = 0.001
-        eigenvalue_vector = arr.array("d", [1] * n)
+        eigenvalue_vector = [1] * n
         div_sum = 1
         step = (n // num_workers)
 
+        start_time = time.time()
         while div_sum >= epsilon:
             multiply_result = []
             for i in range(num_workers):
@@ -45,12 +46,13 @@ class Solver:
             div_sum = sum(div_sum_arr)
             eigenvalue_vector = norm_vector
 
-        self.write_output(eigenvalue_vector)
+        total_time = time.time() - start_time
+        self.write_output(eigenvalue_vector, total_time)
 
     @staticmethod
     @expose
     def multiply_matrix_by_vector_and_max(matrix_part, vector):
-        result = arr.array("d", [])
+        result = []
         for row in matrix_part:
             result.append(sum(value * v for value, v in zip(row, vector)))
         max_elem = max(result)
@@ -59,7 +61,7 @@ class Solver:
     @staticmethod
     @expose
     def normalize_and_compare(new_vector_part, old_vector_part, max_elem):
-        normalize_vector_part = arr.array("d", [])
+        normalize_vector_part = []
         div_sum = 0
         max_elem = max_elem
         for new_val, old_val in zip(new_vector_part, old_vector_part):
@@ -71,8 +73,8 @@ class Solver:
     @staticmethod
     @expose
     def reduce(result):
-        vector = arr.array("d", [])
-        value = arr.array("d", [])
+        vector = []
+        value = []
         for x in result:
             for j, i in enumerate(x.value):
                 if j % 2 == 0:
@@ -83,12 +85,13 @@ class Solver:
 
     def read_input(self):
         with open(self.input_file_name, 'r') as f:
-            lines = [arr.array("d", map(float, line.split())) for line in f]
+            lines = [map(float, line.split()) for line in f]
         n = len(lines)
         if not all(len(row) == n for row in lines):
             raise ValueError("Non-square matrix.")
         return lines, n
 
-    def write_output(self, output):
+    def write_output(self, output, total_time):
         with open(self.output_file_name, 'w') as f:
-            f.write(' '.join(map(str, output)))
+            f.write("Time: " + str(total_time) + "\n")
+            f.write("Eigenvalue vector: "+' '.join(map(str, output)))
